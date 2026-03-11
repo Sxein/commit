@@ -11,4 +11,26 @@ model User {
   id    Int     @id @default(autoincrement()) 
   email String  @unique
   name  String?
+  // Relation to Commit
+  commits Commit[]
+}
+
+model Commit {
+  id Int @id @default(autoincrement())
+  title String
+  createdAt DateTime @default(now())
+  // Foreign key to User
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  // Relation to CommitLog
+  logs CommitLog[]
+}
+
+model CommitLog {
+  id Int @id @default(autoincrement())
+  date DateTime @default(now())
+  isCompleted Boolean @default(false)
+
+  commitId Int
+  commit Commit @relation(fields: [commitId], references: [id])
 }
