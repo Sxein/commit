@@ -1,5 +1,5 @@
 import router from 'express';
-import { createCommit, getAllCommits } from '../controllers/habitControllelr.js';
+import { createCommit, getAllCommits } from '../controllers/commitController.js';
 
 const commitRoutes = router();
 
