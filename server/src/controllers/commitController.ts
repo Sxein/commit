@@ -23,7 +23,7 @@ export const getAllCommits = async (req: Request, res: Response) => {
     // use req.params to get the userId
     const { userId } = req.params;
     try {
-        if (typeof userId !== 'string') {
+        if ( typeof userId !== 'string' || isNaN(Number(userId))) {
             return res.status(400).json({error: 'Invalid userId parameter.'})
         }
         const commits = await prisma.commit.findMany({

@@ -30,7 +30,7 @@ model CommitLog {
   id Int @id @default(autoincrement())
   date DateTime @default(now())
   isCompleted Boolean @default(false)
-
+  // Foreign key to Commit
   commitId Int
   commit Commit @relation(fields: [commitId], references: [id])
 }
