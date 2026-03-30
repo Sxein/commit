@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { fetchCommits, createCommit } from '@/services/api';
+import { fetchCommits, createCommit, logCommitCompletion} from '@/services/api';
+
 
   interface Commit {
     id: number;
@@ -13,6 +14,7 @@ import { fetchCommits, createCommit } from '@/services/api';
 function App() {
   const [commits, setCommits] = useState<Commit[]>([]);
   const [commitTitle, setCommitTitle] = useState('');
+  const [completeToday, setCompleteToday] = useState<number[]>([]);
 
   function handleCreateCommit(title: string){
     const userId = 1;
@@ -22,6 +24,22 @@ function App() {
       setCommits(prevCommits => [...prevCommits, newCommit]);
       setCommitTitle('');
     })
+  }
+
+  function handleLogCommit(commitId: number) {
+    if (completeToday.includes(commitId)) {
+      return;
+    }
+    
+    logCommitCompletion(commitId).then(() => {
+      console.log(`Logged completion for commit ${commitId}`);
+    }).catch(error => {
+      console.error(`Error logging completion for commit ${commitId}:`, error);
+    });
+
+    if (!completeToday.includes(commitId)) {
+      setCompleteToday(prev => [...prev, commitId]);
+    }
   }
   useEffect(() => {
     const userId = '1';
@@ -55,8 +73,14 @@ function App() {
       </form>
 
       <div className="space-y-4">
-      {commits.map((commit) => (
-        <Card key={commit.id} className="my-3 hover:bg-slate-50 transition-colors cursor-pointer shadow-sm">
+      {commits.map((commit) => ( 
+        <Card 
+        key={commit.id} 
+        className={
+          `my-3 transition-colors shadow-sm
+          ${completeToday.includes(commit.id) ? 'bg-green-200 cursor-not-allowed' : 'bg-white hover:bg-gray-50 cursor-pointer'}`}
+          onClick = {() => handleLogCommit(commit.id)}
+        >
           <CardHeader className="py-4 px-6 gap-1">
             <CardTitle className="text-lg text-slate-900">{commit.title}</CardTitle>
             <CardDescription className="text-sm">Commit #{commit.id} • User {commit.userId}</CardDescription>

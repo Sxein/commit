@@ -33,3 +33,22 @@ export async function createCommit(title: string, userId: number) {
         throw error;
     }
 }
+
+export async function logCommitCompletion(commitId: number) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/commits/${commitId}/logs`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Error logging commit completion: ${response.statusText}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error logging commit completion:', error);
+        throw error;
+    }
+}
