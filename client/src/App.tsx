@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { fetchCommits, createCommit, logCommitCompletion} from '@/services/api';
+import { fetchCommits, createCommit, logCommitCompletion, fetchCommitLogs } from '@/services/api';
 
 
   interface Commit {
@@ -15,7 +15,38 @@ function App() {
   const [commits, setCommits] = useState<Commit[]>([]);
   const [commitTitle, setCommitTitle] = useState('');
   const [completeToday, setCompleteToday] = useState<number[]>([]);
+  
+  useEffect(() => {
+    const loadCommitsToBeCompletedToday = async () => {
+      const userId = '1';
+      try {
+        //fetch commits for user
+        const commits = await fetchCommits(userId);
+        setCommits(commits);
 
+        //fetch logs for each commit
+        const logPromises = commits.map((commit: Commit) => fetchCommitLogs(commit.id));
+        const allLogs = await Promise.all(logPromises);
+
+        const completedCommitIdsForToday: number[] = [];
+        const today = new Date().toDateString();
+
+        const allLogsFlat = allLogs.flat();
+        allLogsFlat.forEach((log: {commitId: number, date: string, isCompleted: boolean}) => {
+          const logDate = new Date(log.date).toDateString();
+          if (log.isCompleted && logDate === today) {
+            completedCommitIdsForToday.push(log.commitId);
+          }
+        })
+        setCompleteToday(completedCommitIdsForToday);
+      } catch (error) {
+        console.error('Error fetching commits:', error);
+      }
+    };
+    loadCommitsToBeCompletedToday();
+  }, []);
+
+  // Create a new commit
   function handleCreateCommit(title: string){
     const userId = 1;
     
@@ -26,6 +57,7 @@ function App() {
     })
   }
 
+  // Log commit completion
   function handleLogCommit(commitId: number) {
     if (completeToday.includes(commitId)) {
       return;
@@ -41,16 +73,16 @@ function App() {
       setCompleteToday(prev => [...prev, commitId]);
     }
   }
-  useEffect(() => {
-    const userId = '1';
-    fetchCommits(userId)
-      .then(data => { 
-        setCommits(data);
-      })
-      .catch(error => {
-        console.error('Error fetching commits:', error);
-      });
-  }, []);
+  // useEffect(() => {
+  //   const userId = '1';
+  //   fetchCommits(userId)
+  //     .then(data => { 
+  //       setCommits(data);
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching commits:', error);
+  //     });
+  // }, []);
 
   return (
     <div className="max-w-xl mx-auto p-6">
