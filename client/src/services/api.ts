@@ -34,7 +34,7 @@ export async function createCommit(title: string, userId: number) {
     }
 }
 
-export async function logCommitCompletion(commitId: number) {
+export async function createCommitLog(commitId: number) {
     try {
         const response = await fetch(`http://localhost:3000/api/commits/${commitId}/logs`, {
             method: 'POST',

@@ -3,22 +3,16 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { fetchCommits, createCommit, logCommitCompletion, fetchCommitLogs } from '@/services/api';
+import { fetchCommits, createCommit, createCommitLog, fetchCommitLogs } from '@/services/api';
 
 
-  interface Commit {
+interface Commit {
     id: number;
     title: string;
     userId: number;
   }
 
-function App() {
-  const [commits, setCommits] = useState<Commit[]>([]);
-  const [commitTitle, setCommitTitle] = useState('');
-  const [completeToday, setCompleteToday] = useState<number[]>([]);
-  const [streaks, setStreaks] = useState<Record<number, number>>({});
-  
-  function calculateStreaks(logs: { date: string; isCompleted: boolean }[]): number {
+function calculateStreaks(logs: { date: string; isCompleted: boolean }[]): number {
     // Filter logs to only include completed ones
     const completedLogs = logs.filter(log => log.isCompleted);
     // Extract unique dates from completed logs and get ride of time component for accurate streak calculation
@@ -58,8 +52,15 @@ function App() {
     }
 
     return streak;
+  }
 
-}
+function App() {
+  const [commits, setCommits] = useState<Commit[]>([]);
+  const [commitTitle, setCommitTitle] = useState('');
+  const [completedLogsforToday, setCompletedLogsforToday] = useState<number[]>([]);
+  const [streaks, setStreaks] = useState<Record<number, number>>({});
+  
+  
   useEffect(() => {
     const loadCommitsToBeCompletedToday = async () => {
       const userId = '1';
@@ -72,17 +73,27 @@ function App() {
         const logPromises = commits.map((commit: Commit) => fetchCommitLogs(commit.id));
         const allLogs = await Promise.all(logPromises);
 
+        const newStreaks: Record<number, number> = {};
         const completedCommitIdsForToday: number[] = [];
         const today = new Date().toDateString();
-
         const allLogsFlat = allLogs.flat();
+
+        // Check logs to find completed commits for today
         allLogsFlat.forEach((log: { date: string; isCompleted: boolean; commitId: number }) => {
           const logDate = new Date(log.date).toDateString();
           if (log.isCompleted && logDate === today) {
             completedCommitIdsForToday.push(log.commitId);
           }
         })
-        setCompleteToday(completedCommitIdsForToday);
+
+        // Calculate streaks for each commit
+        commits.forEach((commit: Commit) => {
+          const logsForSpecificCommit = allLogsFlat.filter(log => (log.commitId === commit.id))
+          newStreaks[commit.id] = calculateStreaks(logsForSpecificCommit);
+        })
+
+        setCompletedLogsforToday(completedCommitIdsForToday);
+        setStreaks(newStreaks);
       } catch (error) {
         console.error('Error fetching commits:', error);
       }
@@ -102,21 +113,32 @@ function App() {
   }
 
   // Log commit completion
-  function handleLogCommit(commitId: number) {
-    if (completeToday.includes(commitId)) {
+  function handleCreateLogCommit(commitId: number) {
+    if (completedLogsforToday.includes(commitId)) {
       return;
     }
     
-    logCommitCompletion(commitId).then(() => {
+    createCommitLog(commitId).then(() => {
       console.log(`Logged completion for commit ${commitId}`);
     }).catch(error => {
       console.error(`Error logging completion for commit ${commitId}:`, error);
     });
 
-    if (!completeToday.includes(commitId)) {
-      setCompleteToday(prev => [...prev, commitId]);
+    if (!completedLogsforToday.includes(commitId)) {
+      setCompletedLogsforToday(prev => [...prev, commitId]);
     }
+
+    
+    // setStreaks(prev => {
+    //   const currentStreak = prev[commitId] || 0;
+    //   return {
+    //     ...prev,
+    //     [commitId]: currentStreak + 1,
+    //   };
+    // });
+    setStreaks(prev => ({ ...prev, [commitId]: (prev[commitId] || 0) + 1 }));
   }
+
   // useEffect(() => {
   //   const userId = '1';
   //   fetchCommits(userId)
@@ -154,12 +176,15 @@ function App() {
         key={commit.id} 
         className={
           `my-3 transition-colors shadow-sm
-          ${completeToday.includes(commit.id) ? 'bg-green-200 cursor-not-allowed' : 'bg-white hover:bg-gray-50 cursor-pointer'}`}
-          onClick = {() => handleLogCommit(commit.id)}
+          ${completedLogsforToday.includes(commit.id) ? 'bg-green-200 cursor-not-allowed' : 'bg-white hover:bg-gray-50 cursor-pointer'}`}
+          onClick = {() => handleCreateLogCommit(commit.id)}
         >
           <CardHeader className="py-4 px-6 gap-1">
             <CardTitle className="text-lg text-slate-900">{commit.title}</CardTitle>
             <CardDescription className="text-sm">Commit #{commit.id} • User {commit.userId}</CardDescription>
+            <div className="mt-1 font-medium text-orange-600">
+                {streaks[commit.id] ? `🔥 Streak: ${streaks[commit.id]} day(s)` : 'No streak yet'}
+              </div>
           </CardHeader>
         </Card>
       ))}
