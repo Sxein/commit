@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { fetchCommits, createCommit, createCommitLog, fetchCommitLogs } from '@/services/api';
+import { getLast30Days } from './lib/utils';
 
 
 interface Commit {
@@ -59,7 +60,6 @@ function App() {
   const [commitTitle, setCommitTitle] = useState('');
   const [completedLogsforToday, setCompletedLogsforToday] = useState<number[]>([]);
   const [streaks, setStreaks] = useState<Record<number, number>>({});
-  
   
   useEffect(() => {
     const loadCommitsToBeCompletedToday = async () => {
@@ -129,14 +129,14 @@ function App() {
     }
 
     
-    // setStreaks(prev => {
-    //   const currentStreak = prev[commitId] || 0;
-    //   return {
-    //     ...prev,
-    //     [commitId]: currentStreak + 1,
-    //   };
-    // });
-    setStreaks(prev => ({ ...prev, [commitId]: (prev[commitId] || 0) + 1 }));
+    setStreaks(prev => {
+      const currentStreak = prev[commitId] || 0;
+      return {
+        ...prev,
+        [commitId]: currentStreak + 1,
+      };
+    });
+    // setStreaks(prev => ({ ...prev, [commitId]: (prev[commitId] || 0) + 1 }));
   }
 
   // useEffect(() => {
