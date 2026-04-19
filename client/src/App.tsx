@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { fetchCommits, createCommit, createCommitLog, fetchCommitLogs } from '@/services/api';
-import { getLast30Days } from './lib/utils';
 import Heatmap from './components/Heatmap';
 
 
@@ -59,7 +58,7 @@ function calculateStreaks(logs: { date: string; isCompleted: boolean }[]): numbe
 function App() {
   const [commits, setCommits] = useState<Commit[]>([]);
   const [commitTitle, setCommitTitle] = useState('');
-  const [completedLogsforToday, setCompletedLogsforToday] = useState<number[]>([]);
+  const [completedCommitIdsToday, setCompletedCommitIdsToday] = useState<number[]>([]);
   const [streaks, setStreaks] = useState<Record<number, number>>({});
   
   useEffect(() => {
@@ -93,7 +92,7 @@ function App() {
           newStreaks[commit.id] = calculateStreaks(logsForSpecificCommit);
         })
 
-        setCompletedLogsforToday(completedCommitIdsForToday);
+        setCompletedCommitIdsToday(completedCommitIdsForToday);
         setStreaks(newStreaks);
       } catch (error) {
         console.error('Error fetching commits:', error);
@@ -104,29 +103,34 @@ function App() {
 
 
   // Create a new commit
-  function handleCreateCommit(title: string){
+  const handleCreateCommit = async (title: string) => {
     const userId = 1;
-    
-    createCommit(title, userId).then(newCommit => {
+    try {
+      const newCommit = await createCommit(title, userId);
       setCommits(prevCommits => [...prevCommits, newCommit]);
       setCommitTitle('');
-    })
+    }
+    catch (error) {
+      console.error('Error creating commit:', error);
+    }
   }
 
   // Log commit completion
-  function handleCreateLogCommit(commitId: number) {
-    if (completedLogsforToday.includes(commitId)) {
+  const handleCreateCommitLog = async (commitId: number) => {
+    if (completedCommitIdsToday.includes(commitId)) {
       return;
     }
     
-    createCommitLog(commitId).then(() => {
-      console.log(`Logged completion for commit ${commitId}`);
-    }).catch(error => {
+    try {
+      await createCommitLog(commitId);
+    }
+    catch (error) {
       console.error(`Error logging completion for commit ${commitId}:`, error);
-    });
+      return;
+    }
 
-    if (!completedLogsforToday.includes(commitId)) {
-      setCompletedLogsforToday(prev => [...prev, commitId]);
+    if (!completedCommitIdsToday.includes(commitId)) {
+      setCompletedCommitIdsToday(prev => [...prev, commitId]);
     }
 
     
@@ -177,8 +181,8 @@ function App() {
         key={commit.id} 
         className={
           `my-3 transition-colors shadow-sm
-          ${completedLogsforToday.includes(commit.id) ? 'bg-green-200 cursor-not-allowed' : 'bg-white hover:bg-gray-50 cursor-pointer'}`}
-          onClick = {() => handleCreateLogCommit(commit.id)}
+          ${completedCommitIdsToday.includes(commit.id) ? 'bg-green-200 cursor-not-allowed' : 'bg-white hover:bg-gray-50 cursor-pointer'}`}
+          onClick = {() => handleCreateCommitLog(commit.id)}
         >
           <CardHeader className="py-4 px-6 gap-1">
             <CardTitle className="text-lg text-slate-900">{commit.title}</CardTitle>
@@ -187,11 +191,10 @@ function App() {
                 {streaks[commit.id] ? `🔥 Streak: ${streaks[commit.id]} day(s)` : 'No streak yet'}
               </div>
           </CardHeader>
+          <Heatmap commitId={commit.id} isCompletedToday={completedCommitIdsToday.includes(commit.id)} />
         </Card>
       ))}
       </div>
-      <Heatmap />
-
     </div>
   )
 }
