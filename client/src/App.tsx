@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { fetchCommits, createCommit, createCommitLog, fetchCommitLogs } from '@/services/api';
 import { getLast30Days } from './lib/utils';
+import Heatmap from './components/Heatmap';
 
 
 interface Commit {
@@ -189,6 +190,8 @@ function App() {
         </Card>
       ))}
       </div>
+      <Heatmap />
+
     </div>
   )
 }
