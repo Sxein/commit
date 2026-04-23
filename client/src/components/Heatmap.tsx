@@ -9,6 +9,11 @@ interface HeatmapProps {
 
 export default function Heatmap({ commitId, isCompletedToday }: HeatmapProps) {
     const last30Days = getLast30Days();
+    
+    // Get today's date in YYYY-MM-DD format
+    const d = new Date();
+    const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
     const [completedDays, setCompletedDays] = useState<Record<string, boolean>>({});
     
     useEffect(() => {
@@ -39,14 +44,15 @@ export default function Heatmap({ commitId, isCompletedToday }: HeatmapProps) {
     // };
 
     return (
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1 px-6 pb-6">
             {last30Days.map((date) => {
-                const isToday = date === new Date().toISOString().split('T')[0];
-                const isCompleted =(isToday && isCompletedToday) || (completedDays[date]) || false;
+                const isToday = (date === todayStr);
+                const isCompleted = (isToday && isCompletedToday) || completedDays[date] || false;
                 return (
                     <div
                         key={date}
-                        className={`w-4 h-4 rounded-sm ${isCompleted ? "bg-green-500" : "bg-gray-300"}`}
+                        title={`${date}: ${isCompleted ? 'Completed' : 'Missed'}`}
+                        className={`w-4 h-4 rounded-sm ${isCompleted ? "bg-green-500" : "bg-gray-200"}`}
                     />
                 )
             })}
