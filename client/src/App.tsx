@@ -13,7 +13,13 @@ interface Commit {
     userId: number;
   }
 
-function calculateStreaks(logs: { date: string; isCompleted: boolean }[]): number {
+interface CommitLog {
+    date: string;
+    isCompleted: boolean;
+    commitId: number;
+}
+
+function calculateStreaks(logs: CommitLog[]): number {
     // Filter logs to only include completed ones
     const completedLogs = logs.filter(log => log.isCompleted);
     // Extract unique dates from completed logs and get ride of time component for accurate streak calculation
@@ -60,6 +66,7 @@ function App() {
   const [commitTitle, setCommitTitle] = useState('');
   const [completedCommitIdsToday, setCompletedCommitIdsToday] = useState<number[]>([]);
   const [streaks, setStreaks] = useState<Record<number, number>>({});
+  const [logs, setLogs] = useState<CommitLog[]>([]);
   
   useEffect(() => {
     const loadCommitsToBeCompletedToday = async () => {
@@ -78,8 +85,11 @@ function App() {
         const today = new Date().toDateString();
         const allLogsFlat = allLogs.flat();
 
+        // Store all logs in state for heatmap use
+        setLogs(allLogsFlat);
+
         // Check logs to find completed commits for today
-        allLogsFlat.forEach((log: { date: string; isCompleted: boolean; commitId: number }) => {
+        allLogsFlat.forEach((log: CommitLog) => {
           const logDate = new Date(log.date).toDateString();
           if (log.isCompleted && logDate === today) {
             completedCommitIdsForToday.push(log.commitId);
@@ -188,10 +198,11 @@ function App() {
             <CardTitle className="text-lg text-slate-900">{commit.title}</CardTitle>
             <CardDescription className="text-sm">Commit #{commit.id} • User {commit.userId}</CardDescription>
             <div className="mt-1 font-medium text-orange-600">
-                {streaks[commit.id] ? `🔥 Streak: ${streaks[commit.id]} day(s)` : 'No streak yet'}
+                {streaks[commit.id] > 1 ? `🔥 Streak: ${streaks[commit.id]} day(s)`: ''}
               </div>
           </CardHeader>
-          <Heatmap commitId={commit.id} isCompletedToday={completedCommitIdsToday.includes(commit.id)} />
+          <Heatmap commitId={commit.id} isCompletedToday={completedCommitIdsToday.includes(commit.id)}
+           logs = {logs.filter(log => log.commitId === commit.id)} />
         </Card>
       ))}
       </div>
