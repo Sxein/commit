@@ -201,7 +201,7 @@ function App() {
                 {streaks[commit.id] > 1 ? `🔥 Streak: ${streaks[commit.id]} day(s)`: ''}
               </div>
           </CardHeader>
-          <Heatmap commitId={commit.id} isCompletedToday={completedCommitIdsToday.includes(commit.id)}
+          <Heatmap isCompletedToday={completedCommitIdsToday.includes(commit.id)}
            logs = {logs.filter(log => log.commitId === commit.id)} />
         </Card>
       ))}
