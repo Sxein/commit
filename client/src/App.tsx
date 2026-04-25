@@ -2,6 +2,7 @@ import './App.css';
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { fetchCommits, createCommit, createCommitLog, fetchCommitLogs } from '@/services/api';
 import Heatmap from './components/Heatmap';
@@ -187,23 +188,30 @@ function App() {
 
       <div className="space-y-4">
       {commits.map((commit) => ( 
-        <Card 
-        key={commit.id} 
-        className={
-          `my-3 transition-colors shadow-sm
-          ${completedCommitIdsToday.includes(commit.id) ? 'bg-green-200 cursor-not-allowed' : 'bg-white hover:bg-gray-50 cursor-pointer'}`}
-          onClick = {() => handleCreateCommitLog(commit.id)}
+        <motion.div
+          key={commit.id}
+          layout
+          whileHover={{ scale: 1.02, y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
-          <CardHeader className="py-4 px-6 gap-1">
-            <CardTitle className="text-lg text-slate-900">{commit.title}</CardTitle>
-            <CardDescription className="text-sm">Commit #{commit.id} • User {commit.userId}</CardDescription>
-            <div className="mt-1 font-medium text-orange-600">
-                {streaks[commit.id] > 1 ? `🔥 Streak: ${streaks[commit.id]} day(s)`: ''}
-              </div>
-          </CardHeader>
-          <Heatmap isCompletedToday={completedCommitIdsToday.includes(commit.id)}
-           logs = {logs.filter(log => log.commitId === commit.id)} />
-        </Card>
+          <Card 
+          className={
+            `my-3 transition-colors shadow-sm overflow-hidden
+            ${completedCommitIdsToday.includes(commit.id) ? 'bg-green-200 cursor-not-allowed' : 'bg-white hover:bg-gray-50 cursor-pointer'}`}
+            onClick = {() => handleCreateCommitLog(commit.id)}
+          >
+            <CardHeader className="py-4 px-6 gap-1">
+              <CardTitle className="text-lg text-slate-900">{commit.title}</CardTitle>
+              <CardDescription className="text-sm">Commit #{commit.id} • User {commit.userId}</CardDescription>
+              <div className="mt-1 font-medium text-orange-600">
+                  {streaks[commit.id] > 1 ? `🔥 Streak: ${streaks[commit.id]} day(s)`: ''}
+                </div>
+            </CardHeader>
+            <Heatmap isCompletedToday={completedCommitIdsToday.includes(commit.id)}
+             logs = {logs.filter(log => log.commitId === commit.id)} />
+          </Card>
+        </motion.div>
       ))}
       </div>
     </div>
