@@ -1,9 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { AuthRequest, JwtPayload } from '../types/index.js';
 
-interface AuthRequest extends Request {
-    user ?: any;
-}
+
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
     const token = req.cookies.jwt;
     if (!token) {
@@ -17,8 +16,8 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     }
 
     try {
-        const decodedPayload = jwt.verify(token, secret)
-        req.user = decodedPayload
+        const decodedPayload : JwtPayload = jwt.verify(token, secret) as JwtPayload;
+        req.user = decodedPayload;
         next();
         
     } catch (error) {
