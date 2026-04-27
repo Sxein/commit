@@ -5,6 +5,6 @@ import { authenticate } from '../middleware/authMiddleware.js';
 const commitRoutes = Router();
 
 commitRoutes.post('/', authenticate, createCommit);
-commitRoutes.get('/:userId', authenticate, getAllCommits);
+commitRoutes.get('/', authenticate, getAllCommits);
 
 export default commitRoutes;
