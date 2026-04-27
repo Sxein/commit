@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../types/index.js';
 import { prisma } from "../../lib/prisma.js";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -71,4 +72,13 @@ export const login = async (req: Request, res: Response) => {
         console.error('Error during login:', error);
         res.status(500).json({ error: 'An error occurred during login.' });
     }
+}
+
+export const getMe = async (req: AuthRequest, res: Response) => {
+    if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized: No user information found.' });
+    }
+
+    return res.status(200).json(req.user);
+
 }
