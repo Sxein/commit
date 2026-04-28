@@ -15,6 +15,27 @@ export const getMe = async () => {
         throw error;
     }
 }
+
+export const register = async (email: string, password: string) => {
+    try {
+        const { data } = await api.post('/auth/register', { email, password });
+        return data;
+    } catch (error) {
+        console.error('Error registering user:', error);
+        throw error;
+    }
+}
+
+export const login = async (email: string, password: string) => {
+    try {
+        const { data } = await api.post('/auth/login', { email, password });
+        return data;
+    } catch (error) {
+        console.error('Error logging in:', error);
+        throw error;
+    }
+}
+
 export const fetchCommits = async () => {
     try {
         const { data } = await api.get('/commits');
