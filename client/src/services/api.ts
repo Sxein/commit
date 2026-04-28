@@ -5,6 +5,16 @@ const api = axios.create({
     withCredentials: true,
 })
 
+export const getMe = async () => {
+    try {
+        const { data } = await api.get('/auth/me');
+        return data;
+    }
+    catch (error) {
+        console.error('Error fetching user data:', error);
+        throw error;
+    }
+}
 export const fetchCommits = async () => {
     try {
         const { data } = await api.get('/commits');

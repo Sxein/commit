@@ -71,10 +71,9 @@ function App() {
   
   useEffect(() => {
     const loadCommitsToBeCompletedToday = async () => {
-      const userId = '1';
       try {
         //fetch commits for user
-        const commits = await fetchCommits(userId);
+        const commits = await fetchCommits();
         setCommits(commits);
 
         //fetch logs for each commit
@@ -115,9 +114,8 @@ function App() {
 
   // Create a new commit
   const handleCreateCommit = async (title: string) => {
-    const userId = 1;
     try {
-      const newCommit = await createCommit(title, userId);
+      const newCommit = await createCommit(title);
       setCommits(prevCommits => [...prevCommits, newCommit]);
       setCommitTitle('');
     }
