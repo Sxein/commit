@@ -23,7 +23,7 @@ export const register = async (req: Request, res: Response) => {
                 password: hashedPassword,
             }
         })
-        res.status(201).json({ message: 'User registered successfully.', userId: newUser.id });
+        res.status(201).json({ message: 'User registered successfully.', user: { userId: newUser.id, email: newUser.email } });
     }
     catch (error) {
         console.error('Error during registration:', error);
@@ -66,7 +66,7 @@ export const login = async (req: Request, res: Response) => {
             sameSite: 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
-        res.status(200).json({ message: 'Login successful.', userId: user.id });
+        res.status(200).json({ message: 'Login successful.', user: { userId: user.id, email: user.email } });
     }
     catch (error) {
         console.error('Error during login:', error);
