@@ -36,6 +36,16 @@ export const login = async (email: string, password: string) => {
     }
 }
 
+export const logout = async () => {
+    try {
+        const { data } = await api.post('/auth/logout');
+        return data;
+    } catch (error) {
+        console.error('Error logging out:', error);
+        throw error;
+    }
+}
+
 export const fetchCommits = async () => {
     try {
         const { data } = await api.get('/commits');

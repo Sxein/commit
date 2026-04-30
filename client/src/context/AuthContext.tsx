@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { getMe } from '@/services/api';
+import { logout } from '@/services/api';
 
 interface User {
     userId: number;
@@ -10,7 +11,9 @@ interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     setUser: React.Dispatch<React.SetStateAction<User | null>>;
+    logoutUser: () => Promise<void>;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -35,8 +38,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         checkAuth();
     }, []);
 
+    const logoutUser = async () => {
+        try {
+            await logout();
+            setUser(null);
+        } catch (error) {
+            console.error('Error logging out:', error);
+            throw error;
+        }
+    };
+
     return (
-        <AuthContext value={{ user, isLoading, setUser }}>
+        <AuthContext value={{ user, isLoading, setUser, logoutUser }}>
             {children}
         </AuthContext>
     );

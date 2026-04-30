@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { fetchCommits, createCommit, createCommitLog, fetchCommitLogs } from '@/services/api';
+import { useAuth } from '@/context/AuthContext';
 import Heatmap from '../components/Heatmap';
 
 
@@ -67,7 +68,8 @@ export default function Home() {
     const [completedCommitIdsToday, setCompletedCommitIdsToday] = useState<number[]>([]);
     const [streaks, setStreaks] = useState<Record<number, number>>({});
     const [logs, setLogs] = useState<CommitLog[]>([]);
-    
+    const { logoutUser } = useAuth(); 
+
     useEffect(() => {
       const loadCommitsToBeCompletedToday = async () => {
         try {
@@ -153,6 +155,9 @@ export default function Home() {
     return (
       <div className="max-w-xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6 text-slate-900">Commits</h1>
+        <Button onClick={logoutUser} className="ml-auto">
+          Logout
+        </Button>
       <form 
           className='flex w-full items-center space-x-2 mb-8'
           onSubmit={(e) => {

@@ -82,3 +82,12 @@ export const getMe = async (req: AuthRequest, res: Response) => {
     return res.status(200).json(req.user);
 
 }
+
+export const logout = async (req: Request, res: Response) => {
+    res.clearCookie('jwt', {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+    });
+    res.status(200).json({ message: 'Logout successful.' });
+}
