@@ -86,3 +86,22 @@ export const createCommitLog = async (commitId: number) => {
     }
 }
 
+export const updateCommit = async (commitId: number, title: string) => {
+    try {
+        const { data } = await api.put(`/commits/${commitId}`, { title });
+        return data;
+    } catch (error) {
+        console.error('Error updating commit:', error);
+        throw error;
+    }
+}
+
+export const deleteCommit = async (commitId: number) => {
+    try {
+        const { data } = await api.delete(`/commits/${commitId}`);
+        return data;
+    } catch (error) {
+        console.error('Error deleting commit:', error);
+        throw error;
+    }
+}
