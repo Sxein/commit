@@ -76,9 +76,9 @@ export const fetchCommitLogs = async (commitId: number) => {
     }
 }
 
-export const createCommitLog = async (commitId: number) => {
+export const createCommitLog = async (commitId: number, date: string) => {
     try {
-        const { data } = await api.post(`/commits/${commitId}/logs`);
+        const { data } = await api.post(`/commits/${commitId}/logs`, { date });
         return data;
     } catch (error) {
         console.error('Error creating commit log:', error);

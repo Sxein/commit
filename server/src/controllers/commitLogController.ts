@@ -3,14 +3,21 @@ import { prisma } from "../../lib/prisma.js";
 
 export const createCommitLog = async (req: Request, res: Response) => {
     const {commitId} = req.params;
+
+    const { date } = req.body;
+
     try {
         if ( typeof commitId !== 'string' || isNaN(Number(commitId))) {
-            return res.status(400).json({error: 'Invalid commitId parameter.'})
+            return res.status(400).json({error: 'Invalid commitId or date parameter.'})
+        }
+
+        if (typeof date !== 'string' || isNaN(Date.parse(date))) {
+            return res.status(400).json({error: 'Invalid date parameter.'})
         }
         const commitLog = await prisma.commitLog.create({
             data: {
                 commitId: parseInt(commitId),
-                date: new Date(),
+                date: date,
                 isCompleted: true
             }
         })

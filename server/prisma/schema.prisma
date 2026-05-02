@@ -8,30 +8,30 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement()) 
-  email String  @unique
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
   password String
-  name  String?
+  name     String?
   // Relation to Commit
-  commits Commit[]
+  commits  Commit[]
 }
 
 model Commit {
-  id Int @id @default(autoincrement())
-  title String
-  createdAt DateTime @default(now())
+  id        Int         @id @default(autoincrement())
+  title     String
+  createdAt DateTime    @default(now())
   // Foreign key to User
-  userId Int
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   // Relation to CommitLog
-  logs CommitLog[]
+  logs      CommitLog[]
 }
 
 model CommitLog {
-  id Int @id @default(autoincrement())
-  date DateTime @default(now())
-  isCompleted Boolean @default(false)
+  id          Int      @id @default(autoincrement())
+  date        DateTime
+  isCompleted Boolean  @default(false)
   // Foreign key to Commit
-  commitId Int
-  commit Commit @relation(fields: [commitId], references: [id], onDelete: Cascade)
+  commitId    Int
+  commit      Commit   @relation(fields: [commitId], references: [id], onDelete: Cascade)
 }

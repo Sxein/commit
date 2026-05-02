@@ -95,11 +95,10 @@ export default function Home() {
     const [completedCommitIdsToday, setCompletedCommitIdsToday] = useState<number[]>([]);
     const [streaks, setStreaks] = useState<Record<number, number>>({});
     const [logs, setLogs] = useState<CommitLog[]>([]);
-    const { logoutUser } = useAuth(); 
     const [commitToEdit, setCommitToEdit] = useState<Commit | null>(null);
     const [commitToDelete, setCommitToDelete] = useState<Commit | null>(null);
     const [editTitle, setEditTitle] = useState('');
-
+    const { logoutUser } = useAuth(); 
     useEffect(() => {
       const loadCommitsToBeCompletedToday = async () => {
         try {
@@ -156,13 +155,13 @@ export default function Home() {
     }
 
     // Log commit completion
-    const handleCreateCommitLog = async (commitId: number) => {
+    const handleCreateCommitLog = async (commitId: number, date: string) => {
       if (completedCommitIdsToday.includes(commitId)) {
         return;
       }
       
       try {
-        await createCommitLog(commitId);
+        await createCommitLog(commitId, date);
       }
       catch (error) {
         console.error(`Error logging completion for commit ${commitId}:`, error);
@@ -244,7 +243,7 @@ export default function Home() {
             className={
               `my-3 transition-colors shadow-sm overflow-hidden
               ${completedCommitIdsToday.includes(commit.id) ? 'bg-green-200 cursor-not-allowed' : 'bg-white hover:cursor-pointer'}`}
-              onClick = {() => handleCreateCommitLog(commit.id)}
+              onClick = {() => handleCreateCommitLog(commit.id, new Date().toISOString())}
             >
               <CardHeader className="py-4 px-6">
                 <div className="flex justify-between items-start">
