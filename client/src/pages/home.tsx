@@ -31,7 +31,7 @@ import {
 import { fetchCommits, createCommit, updateCommit, deleteCommit, createCommitLog, fetchCommitLogs,  } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 import Heatmap from '../components/Heatmap';
-import { PencilIcon, Ellipsis , TrashIcon } from "lucide-react"
+import { PencilIcon, Ellipsis , TrashIcon, Loader2  } from "lucide-react"
 import { Label } from "@/components/ui/label"
 
 
@@ -99,6 +99,11 @@ export default function Home() {
     const [commitToDelete, setCommitToDelete] = useState<Commit | null>(null);
     const [editTitle, setEditTitle] = useState('');
     const { logoutUser } = useAuth(); 
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [loadingCommitId, setLoadingCommitId] = useState<Set<number>>(new Set());
+
     useEffect(() => {
       const loadCommitsToBeCompletedToday = async () => {
         try {
@@ -144,6 +149,7 @@ export default function Home() {
 
     // Create a new commit
     const handleCreateCommit = async (title: string) => {
+      setIsCreating(true);
       try {
         const newCommit = await createCommit(title);
         setCommits(prevCommits => [...prevCommits, newCommit]);
@@ -152,6 +158,9 @@ export default function Home() {
       catch (error) {
         console.error('Error creating commit:', error);
       }
+      finally {
+        setIsCreating(false);
+      }
     }
 
     // Log commit completion
@@ -159,6 +168,7 @@ export default function Home() {
       if (completedCommitIdsToday.includes(commitId)) {
         return;
       }
+      setLoadingCommitId(prev => new Set(prev).add(commitId));
       
       try {
         await createCommitLog(commitId, date);
@@ -166,6 +176,13 @@ export default function Home() {
       catch (error) {
         console.error(`Error logging completion for commit ${commitId}:`, error);
         return;
+      }
+      finally {
+        setLoadingCommitId(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(commitId);
+          return newSet;
+        });
       }
 
       if (!completedCommitIdsToday.includes(commitId)) {
@@ -185,6 +202,7 @@ export default function Home() {
     // Update an existing commit
     const handleUpdateCommit = async () => {
       if (!commitToEdit || !editTitle.trim()) return;
+      setIsUpdating(true);
       try {
         await updateCommit(commitToEdit.id, editTitle);
         setCommits(prev => prev.map(c => c.id === commitToEdit.id ? { ...c, title: editTitle } : c));
@@ -193,17 +211,24 @@ export default function Home() {
       } catch (error) {
         console.error('Error updating commit:', error);
       }
+      finally {
+        setIsUpdating(false);
+      }
     }
 
     // Delete a commit
     const handleDeleteCommit = async () => {
       if (!commitToDelete) return;
+
+      setIsDeleting(true);
       try {
         await deleteCommit(commitToDelete.id);
         setCommits(prev => prev.filter(c => c.id !== commitToDelete.id));
         setCommitToDelete(null);
       } catch (error) {
         console.error('Error deleting commit:', error);
+      } finally {
+        setIsDeleting(false);
       }
     }
 
@@ -227,7 +252,14 @@ export default function Home() {
             placeholder="Enter commit message..."
             value={commitTitle}
             onChange={(e) => setCommitTitle(e.target.value)} />
-          <Button type="submit" className='cursor-pointer'>Create Commit</Button>
+          <Button 
+          type="submit" 
+          className='cursor-pointer min-w-22' 
+          disabled={isCreating}
+          >
+            {isCreating && <Loader2 className="h-4 w-4 animate-spin" /> }
+            Create
+          </Button>
         </form>
 
         <div className="space-y-4">
@@ -242,7 +274,9 @@ export default function Home() {
             <Card 
             className={
               `my-3 transition-colors shadow-sm overflow-hidden
-              ${completedCommitIdsToday.includes(commit.id) ? 'bg-green-200 cursor-not-allowed' : 'bg-white hover:cursor-pointer'}`}
+              ${loadingCommitId.has(commit.id) ? 'bg-yellow-500 cursor-wait' 
+              : completedCommitIdsToday.includes(commit.id) ? 'bg-green-200 cursor-not-allowed' 
+              : 'bg-white hover:cursor-pointer'}`}
               onClick = {() => handleCreateCommitLog(commit.id, new Date().toISOString())}
             >
               <CardHeader className="py-4 px-6">
@@ -310,8 +344,9 @@ export default function Home() {
               <DialogClose asChild>
                 <Button variant="outline" onClick={()=> setEditTitle('')} className = "cursor-pointer">Cancel</Button>
               </DialogClose>
-              <Button onClick={handleUpdateCommit} className="cursor-pointer">
-                Save changes
+              <Button onClick={handleUpdateCommit} className="cursor-pointer min-w-22" disabled={isUpdating}>
+                {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />} 
+                Save
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -330,7 +365,13 @@ export default function Home() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-              <Button variant="destructive" onClick={handleDeleteCommit} className="cursor-pointer">
+              <Button 
+              variant="destructive" 
+              onClick={handleDeleteCommit} 
+              className="cursor-pointer min-w-22"
+              disabled={isDeleting}
+              >
+                {isDeleting && <Loader2 className="h-4 w-4 animate-spin" />}
                 Delete
               </Button>
             </AlertDialogFooter>
