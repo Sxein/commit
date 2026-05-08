@@ -1,4 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import { fetchCommits, createCommit, updateCommit, deleteCommit, createCommitLog, fetchCommitLogs,  } from '@/services/api';
+import { useAuth } from '@/context/AuthContext';
+import { useQuery, useQueries, useQueryClient, useMutation } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from 'framer-motion';
@@ -28,8 +31,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { fetchCommits, createCommit, updateCommit, deleteCommit, createCommitLog, fetchCommitLogs,  } from '@/services/api';
-import { useAuth } from '@/context/AuthContext';
 import Heatmap from '../components/Heatmap';
 import { PencilIcon, Ellipsis , TrashIcon, Loader2  } from "lucide-react"
 import { Label } from "@/components/ui/label"
@@ -89,149 +90,119 @@ function calculateStreaks(logs: CommitLog[]): number {
     return streak;
   }
 
+// Temporary empty commit array to satisfy TypeScript type checking for line 140 before data is fetched
+const EMPTY_COMMITS : Commit[] = [];
+
 export default function Home() {
-    const [commits, setCommits] = useState<Commit[]>([]);
     const [commitTitle, setCommitTitle] = useState('');
-    const [completedCommitIdsToday, setCompletedCommitIdsToday] = useState<number[]>([]);
-    const [streaks, setStreaks] = useState<Record<number, number>>({});
-    const [logs, setLogs] = useState<CommitLog[]>([]);
+    const [editTitle, setEditTitle] = useState('');
     const [commitToEdit, setCommitToEdit] = useState<Commit | null>(null);
     const [commitToDelete, setCommitToDelete] = useState<Commit | null>(null);
-    const [editTitle, setEditTitle] = useState('');
     const { logoutUser } = useAuth(); 
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [isCreating, setIsCreating] = useState(false);
-    const [isUpdating, setIsUpdating] = useState(false);
     const [loadingCommitId, setLoadingCommitId] = useState<Set<number>>(new Set());
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-      const loadCommitsToBeCompletedToday = async () => {
-        try {
-          //fetch commits for user
-          const commits = await fetchCommits();
-          setCommits(commits);
+    // Fetch commits using React Query
+    const {data : commitsData, isPending, isError, error} = useQuery({
+      queryKey: ['commits'],
+      queryFn: fetchCommits,
+    })
 
-          //fetch logs for each commit
-          const logPromises = commits.map((commit: Commit) => fetchCommitLogs(commit.id));
-          const allLogs = await Promise.all(logPromises);
+    // Create commit mutation
+    const createCommitMutation = useMutation({
+      mutationFn: createCommit,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['commits'] });
 
-          const newStreaks: Record<number, number> = {};
-          const completedCommitIdsForToday: number[] = [];
-          const today = new Date().toDateString();
-          const allLogsFlat = allLogs.flat();
-
-          // Store all logs in state for heatmap use
-          setLogs(allLogsFlat);
-
-          // Check logs to find completed commits for today
-          allLogsFlat.forEach((log: CommitLog) => {
-            const logDate = new Date(log.date).toDateString();
-            if (log.isCompleted && logDate === today) {
-              completedCommitIdsForToday.push(log.commitId);
-            }
-          })
-
-          // Calculate streaks for each commit
-          commits.forEach((commit: Commit) => {
-            const logsForSpecificCommit = allLogsFlat.filter(log => (log.commitId === commit.id))
-            newStreaks[commit.id] = calculateStreaks(logsForSpecificCommit);
-          })
-
-          setCompletedCommitIdsToday(completedCommitIdsForToday);
-          setStreaks(newStreaks);
-        } catch (error) {
-          console.error('Error fetching commits:', error);
-        }
-      };
-      loadCommitsToBeCompletedToday();
-    }, []);
-
-
-    // Create a new commit
-    const handleCreateCommit = async (title: string) => {
-      setIsCreating(true);
-      try {
-        const newCommit = await createCommit(title);
-        setCommits(prevCommits => [...prevCommits, newCommit]);
         setCommitTitle('');
       }
-      catch (error) {
-        console.error('Error creating commit:', error);
-      }
-      finally {
-        setIsCreating(false);
-      }
-    }
+    })
 
-    // Log commit completion
-    const handleCreateCommitLog = async (commitId: number, date: string) => {
-      if (completedCommitIdsToday.includes(commitId)) {
-        return;
-      }
-      setLoadingCommitId(prev => new Set(prev).add(commitId));
-      
-      try {
-        await createCommitLog(commitId, date);
-      }
-      catch (error) {
-        console.error(`Error logging completion for commit ${commitId}:`, error);
-        return;
-      }
-      finally {
-        setLoadingCommitId(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(commitId);
-          return newSet;
-        });
-      }
-
-      if (!completedCommitIdsToday.includes(commitId)) {
-        setCompletedCommitIdsToday(prev => [...prev, commitId]);
-      }
-
-      
-      setStreaks(prev => {
-        const currentStreak = prev[commitId] || 0;
-        return {
-          ...prev,
-          [commitId]: currentStreak + 1,
-        };
-      });
-    }
-
-    // Update an existing commit
-    const handleUpdateCommit = async () => {
-      if (!commitToEdit || !editTitle.trim()) return;
-      setIsUpdating(true);
-      try {
-        await updateCommit(commitToEdit.id, editTitle);
-        setCommits(prev => prev.map(c => c.id === commitToEdit.id ? { ...c, title: editTitle } : c));
+    // Update commit mutation
+    const updateCommitMutation = useMutation({
+      mutationFn: ({commitId, title}: {commitId: number, title: string}) => updateCommit(commitId, title),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['commits'] });
         setCommitToEdit(null);
         setEditTitle('');
-      } catch (error) {
-        console.error('Error updating commit:', error);
       }
-      finally {
-        setIsUpdating(false);
-      }
-    }
-
-    // Delete a commit
-    const handleDeleteCommit = async () => {
-      if (!commitToDelete) return;
-
-      setIsDeleting(true);
-      try {
-        await deleteCommit(commitToDelete.id);
-        setCommits(prev => prev.filter(c => c.id !== commitToDelete.id));
+    })
+    
+    // Delete commit mutation
+    const deleteCommitMutation = useMutation({
+      mutationFn: deleteCommit,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['commits'] });
         setCommitToDelete(null);
-      } catch (error) {
-        console.error('Error deleting commit:', error);
-      } finally {
-        setIsDeleting(false);
       }
+    })
+
+
+    // Use an empty array as a fallback to prevent errors before data is loaded
+    const commits = commitsData || EMPTY_COMMITS;
+    // Fetch commit logs for all commits using useQueries
+    const commitLogsQueries = useQueries({
+      queries: commits.map((commit: Commit) => ({
+        queryKey: ['commitLogs', commit.id],
+        queryFn: () => fetchCommitLogs(commit.id),
+        enabled: !!commit.id, // Ensure the query only runs if commit.id is available
+      })),
+      combine: (results) => {
+        return {
+          isPending: results.some((result) => result.isPending),
+          data: results.map((result) => result.data).filter(Boolean).flat() as CommitLog[],
+        }
+      }
+    })
+
+        // Create commit log mutation
+    const createCommitLogMutation = useMutation({
+      mutationFn: ({ commitId, date}: {commitId: number, date: string}) => createCommitLog(commitId, date),
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({ queryKey: ['commitLogs', variables.commitId] });
+      }
+    })
+
+
+    // Extract completed commit IDs for today using useMemo to optimize performance
+    const completedCommitIdsToday = useMemo(() => {
+      const commitLogs = commitLogsQueries.data || [];
+      const today = new Date().toDateString();
+
+      return commitLogs
+      .filter(log => log.isCompleted && new Date(log.date).toDateString() === today)
+      .map(log => log.commitId);
+     }, [commitLogsQueries.data]
+    );
+
+    // Calculate streaks for each commit using useMemo to avoid unnecessary recalculations
+    const streaks = useMemo(()=> {
+      const commitLogs = commitLogsQueries.data || [];
+      const newStreak: Record<number, number> = {};
+
+      commits.forEach((commit: Commit) => {
+        const logsForSpecificCommit = commitLogs.filter(log => (log.commitId === commit.id))
+        newStreak[commit.id] = calculateStreaks(logsForSpecificCommit);
+      })
+      return newStreak;
+     }, [commitLogsQueries.data, commits]
+    );
+
+    if (isPending) {
+      return (
+        <div className="flex items-center justify-center h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-slate-500" />
+        </div>
+      );
     }
 
+    if (isError) {
+      return (
+        <div className="flex items-center justify-center h-screen">
+          <p className="text-red-500">Error: {error instanceof Error ? error.message : 'An error occurred'}</p>
+        </div>
+      );
+    }
     return (
       <div className="max-w-xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6 text-slate-900">Commits</h1>
@@ -243,7 +214,7 @@ export default function Home() {
           onSubmit={(e) => {
             e.preventDefault();
             if (commitTitle.trim()) {
-              handleCreateCommit(commitTitle);
+              createCommitMutation.mutate(commitTitle);
             }
           }} 
         >
@@ -255,15 +226,14 @@ export default function Home() {
           <Button 
           type="submit" 
           className='cursor-pointer min-w-22' 
-          disabled={isCreating}
+          disabled={createCommitMutation.isPending}
           >
-            {isCreating && <Loader2 className="h-4 w-4 animate-spin" /> }
+            {createCommitMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" /> }
             Create
           </Button>
         </form>
-
         <div className="space-y-4">
-        {commits.map((commit) => ( 
+        {commitsData.map((commit: Commit) => ( 
           <motion.div
             key={commit.id}
             layout
@@ -277,7 +247,7 @@ export default function Home() {
               ${loadingCommitId.has(commit.id) ? 'bg-yellow-500 cursor-wait' 
               : completedCommitIdsToday.includes(commit.id) ? 'bg-green-200 cursor-not-allowed' 
               : 'bg-white hover:cursor-pointer'}`}
-              onClick = {() => handleCreateCommitLog(commit.id, new Date().toISOString())}
+              onClick = {() => createCommitLogMutation.mutate({ commitId: commit.id, date: new Date().toISOString() })}
             >
               <CardHeader className="py-4 px-6">
                 <div className="flex justify-between items-start">
@@ -296,7 +266,10 @@ export default function Home() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setCommitToEdit(commit)} className="cursor-pointer">
+                        <DropdownMenuItem onClick={() => {
+                          setCommitToEdit(commit);
+                          setEditTitle(commit.title);
+                        }} className="cursor-pointer">
                           <PencilIcon className="mr-2 h-4 w-4" />
                           Edit
                         </DropdownMenuItem>
@@ -315,7 +288,7 @@ export default function Home() {
                 </div>
               </CardHeader>
               <Heatmap isCompletedToday={completedCommitIdsToday.includes(commit.id)}
-              logs = {logs.filter(log => log.commitId === commit.id)} />
+              logs = {(commitLogsQueries.data || []).filter(log => log.commitId === commit.id)} />
             </Card>
           </motion.div>
         ))}
@@ -334,7 +307,7 @@ export default function Home() {
               <Label htmlFor="edit-title">Title</Label>
               <Input 
                 id="edit-title" 
-                value={editTitle ? editTitle : commitToEdit?.title || ''} 
+                value={editTitle} 
                 onChange={(e) => setEditTitle(e.target.value)} 
                 className="mt-2"
                 placeholder="Enter new title..."
@@ -344,8 +317,13 @@ export default function Home() {
               <DialogClose asChild>
                 <Button variant="outline" onClick={()=> setEditTitle('')} className = "cursor-pointer">Cancel</Button>
               </DialogClose>
-              <Button onClick={handleUpdateCommit} className="cursor-pointer min-w-22" disabled={isUpdating}>
-                {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />} 
+              <Button onClick={() => {
+                if (!commitToEdit) return;
+                updateCommitMutation.mutate({commitId: commitToEdit?.id, title: editTitle})
+              }} 
+              className="cursor-pointer min-w-22" 
+              disabled={updateCommitMutation.isPending || !editTitle.trim() || editTitle === commitToEdit?.title}>
+                {updateCommitMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />} 
                 Save
               </Button>
             </DialogFooter>
@@ -367,11 +345,14 @@ export default function Home() {
               <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
               <Button 
               variant="destructive" 
-              onClick={handleDeleteCommit} 
+              onClick={() => {
+                if (!commitToDelete) return;
+                deleteCommitMutation.mutate(commitToDelete.id);
+              }} 
               className="cursor-pointer min-w-22"
-              disabled={isDeleting}
+              disabled={deleteCommitMutation.isPending}
               >
-                {isDeleting && <Loader2 className="h-4 w-4 animate-spin" />}
+                {deleteCommitMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                 Delete
               </Button>
             </AlertDialogFooter>
