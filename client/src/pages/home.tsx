@@ -99,7 +99,6 @@ export default function Home() {
     const [commitToEdit, setCommitToEdit] = useState<Commit | null>(null);
     const [commitToDelete, setCommitToDelete] = useState<Commit | null>(null);
     const { logoutUser } = useAuth(); 
-    const [loadingCommitId, setLoadingCommitId] = useState<Set<number>>(new Set());
     const queryClient = useQueryClient();
 
     // Fetch commits using React Query
@@ -244,7 +243,7 @@ export default function Home() {
             <Card 
             className={
               `my-3 transition-colors shadow-sm overflow-hidden
-              ${loadingCommitId.has(commit.id) ? 'bg-yellow-500 cursor-wait' 
+              ${createCommitLogMutation.isPending && createCommitLogMutation.variables?.commitId === commit.id ? 'bg-yellow-500 cursor-wait' 
               : completedCommitIdsToday.includes(commit.id) ? 'bg-green-200 cursor-not-allowed' 
               : 'bg-white hover:cursor-pointer'}`}
               onClick = {() => createCommitLogMutation.mutate({ commitId: commit.id, date: new Date().toISOString() })}
