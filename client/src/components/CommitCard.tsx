@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import Heatmap from '../components/Heatmap';
-import { PencilIcon, Ellipsis , TrashIcon  } from "lucide-react"
+import { PencilIcon, Ellipsis , TrashIcon, Loader2  } from "lucide-react"
 
 import type { Commit, CommitLog } from '@/types';
 
@@ -17,6 +17,7 @@ import type { Commit, CommitLog } from '@/types';
 export default function CommitCard({
     commit,
     logs,
+    isPendingLogs,
     streak,
     isPending,
     onCreateCommitLog,
@@ -27,6 +28,7 @@ export default function CommitCard({
 } : {
     commit: Commit;
     logs: CommitLog[];
+    isPendingLogs: boolean;
     streak: number;
     isPending: boolean;
     onCreateCommitLog: () => void;
@@ -95,8 +97,14 @@ export default function CommitCard({
                   </div>
                 </div>
               </CardHeader>
-              <Heatmap isCompletedToday={isCompletedToday}
-              logs={logs}/>
+              {isPendingLogs ? (
+                <div className="flex items-center justify-center p-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-slate-500" />
+                </div>
+              ) : (
+                <Heatmap isCompletedToday={isCompletedToday} 
+                logs={logs} />
+              )}
             </Card>
           </motion.div>
     )

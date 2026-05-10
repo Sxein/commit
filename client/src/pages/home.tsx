@@ -92,6 +92,7 @@ export default function Home() {
           key={commit.id} 
           commit={commit}
           logs = {commitLogs.filter(log => log.commitId === commit.id)}
+          isPendingLogs = {isPendingLogs}
           streak = {streaks[commit.id] || 0}
           isPending = {createCommitLog.isPending && createCommitLog.variables?.commitId === commit.id}
           onCreateCommitLog = {() => createCommitLog.mutate({ commitId: commit.id, date: new Date().toISOString() })}
