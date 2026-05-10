@@ -246,7 +246,11 @@ export default function Home() {
               ${createCommitLogMutation.isPending && createCommitLogMutation.variables?.commitId === commit.id ? 'bg-yellow-500 cursor-wait' 
               : completedCommitIdsToday.includes(commit.id) ? 'bg-green-200 cursor-not-allowed' 
               : 'bg-white hover:cursor-pointer'}`}
-              onClick = {() => createCommitLogMutation.mutate({ commitId: commit.id, date: new Date().toISOString() })}
+              onClick = {() =>{
+                if (completedCommitIdsToday.includes(commit.id) || createCommitLogMutation.isPending) return;
+                
+                createCommitLogMutation.mutate({ commitId: commit.id, date: new Date().toISOString() })}
+              } 
             >
               <CardHeader className="py-4 px-6">
                 <div className="flex justify-between items-start">
