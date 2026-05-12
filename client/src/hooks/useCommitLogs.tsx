@@ -24,10 +24,14 @@ export function useCommitLogs(commits: Commit[]) {
     // Create commit log mutation
     const createCommitLogMutation = useMutation({
       mutationFn: ({ commitId, date}: {commitId: number, date: string}) => createCommitLog(commitId, date),
-      onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: ['commitLogs', variables.commitId] });
+      onSuccess: (newLog, variables) => {
+        const queryKey = ['commitLogs', variables.commitId];
+        queryClient.setQueryData(queryKey, (oldLogs: CommitLog[] | undefined) => {
+          if (!oldLogs) return [newLog];
+          return [...oldLogs, newLog];
+        });
       }
-    })
+    });
 
     // Extract completed commit IDs for today using useMemo to optimize performance
     const completedCommitIdsToday = useMemo(() => {
