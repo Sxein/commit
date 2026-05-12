@@ -49,21 +49,23 @@ export default function CommitCard({
           >
             <Card 
             className={
-              `my-3 transition-colors shadow-sm overflow-hidden
-              ${isPending ? 'bg-yellow-500 cursor-wait' 
-              : isCompletedToday ? 'bg-green-200 cursor-not-allowed' 
-              : 'bg-white hover:cursor-pointer'}`}
+              `relative my-3 transition-colors shadow-sm overflow-hidden
+              ${isCompletedToday ? 'bg-green-200 cursor-not-allowed' : 'bg-white hover:cursor-pointer'}`
+              }
               onClick = {() =>{
                 if (isCompletedToday || isPending) return;
-
                 onCreateCommitLog();
               }} 
             >
+              {isPending && (
+                <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
+                  <Loader2 className="h-6 w-6 animate-spin text-slate-500" />
+                </div>
+              )}
               <CardHeader className="py-4 px-6">
                 <div className="flex justify-between items-start">
                   <div className="flex flex-col gap-1">
                     <CardTitle className="text-lg text-slate-900">{commit.title}</CardTitle>
-                    <CardDescription className="text-sm">Commit #{commit.id} • User {commit.userId}</CardDescription>
                     <div className="mt-1 font-medium text-orange-600">
                         {streak > 1 ? `🔥 Streak: ${streak} day(s)`: ''}
                     </div>
