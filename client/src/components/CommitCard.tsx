@@ -69,6 +69,9 @@ export default function CommitCard({
                     <div className="mt-1 font-medium text-orange-600">
                         {streak > 1 ? `🔥 Streak: ${streak} day(s)`: ''}
                     </div>
+                    <div className="font-medium text-blue-400">
+                      Repeatation: {logs.length}
+                    </div>
                   </div>
                   <div onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
