@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -8,7 +7,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import Heatmap from '../components/Heatmap';
 import { PencilIcon, Ellipsis , TrashIcon, Loader2, CirclePlus  } from "lucide-react"
 import type { Commit, CommitLog } from '@/types';
 
@@ -23,7 +21,8 @@ export default function CommitCard({
     isCompletedToday,
     setCommitToEdit,
     setEditTitle,
-    setCommitToDelete
+    setCommitToDelete,
+    onNavigate
 } : {
     commit: Commit;
     logs: CommitLog[];
@@ -35,15 +34,16 @@ export default function CommitCard({
     setCommitToEdit: (commit: Commit) => void;
     setEditTitle: (title: string) => void;
     setCommitToDelete: (commit: Commit) => void;
+    onNavigate: () => void;
 }
 ) {   
-
     return (
         <Card 
         className={
           `relative my-3 transition-colors shadow-sm overflow-hidden
-          ${isCompletedToday ? 'bg-green-200' : 'bg-white hover:cursor-pointer'}`
+          ${isCompletedToday ? 'bg-green-200 cursor-pointer' : 'bg-white hover:cursor-pointer'}`
           }
+          onClick={onNavigate}
         >
           {isPending && (
             <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
@@ -98,14 +98,6 @@ export default function CommitCard({
               </div>
             </div>
           </CardHeader>
-          {isPendingLogs ? (
-            <div className="flex items-center justify-center p-4">
-              <Loader2 className="h-6 w-6 animate-spin text-slate-500" />
-            </div>
-          ) : (
-            <Heatmap isCompletedToday={isCompletedToday} 
-            logs={logs} />
-          )}
         </Card>
     )
 }

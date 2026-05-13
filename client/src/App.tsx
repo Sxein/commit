@@ -5,6 +5,7 @@ import PublicRoute from './components/PublicRoute';
 import Home from './pages/home';
 import Login from './pages/login';
 import Register from './pages/register';
+import CommitDetails from './pages/commit-details';
 
     
 function App() {
@@ -14,6 +15,7 @@ function App() {
             <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+            <Route path="/commit/:id" element={<ProtectedRoute><CommitDetails /></ProtectedRoute>} />
         </Routes>
     </BrowserRouter>
   )

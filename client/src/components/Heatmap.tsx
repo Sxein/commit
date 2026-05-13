@@ -1,11 +1,10 @@
 import { getLast30Days } from "../lib/utils";
 
 interface HeatmapProps {
-    isCompletedToday: boolean;
     logs?: { date: string; isCompleted: boolean; commitId: number }[]; 
 }
 
-export default function Heatmap({ isCompletedToday, logs }: HeatmapProps) {
+export default function Heatmap({logs }: HeatmapProps) {
     const last30Days = getLast30Days();
     
     // Get today's date in YYYY-MM-DD format
@@ -22,8 +21,7 @@ export default function Heatmap({ isCompletedToday, logs }: HeatmapProps) {
     return (
         <div className="flex flex-wrap gap-1 px-6 pb-6">
             {last30Days.map((date) => {
-                const isToday = (date === todayStr);
-                const isCompleted = (isToday && isCompletedToday) || dataMap[date] || false;
+                const isCompleted = dataMap[date] || false;
                 return (
                     <div
                         key={date}

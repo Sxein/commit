@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCommits } from '@/hooks/useCommits';
 import { useCommitLogs } from '@/hooks/useCommitLogs';
 import { useAuth } from '@/context/AuthContext';
@@ -35,6 +36,7 @@ export default function Home() {
     const [editTitle, setEditTitle] = useState('');
     const [commitToEdit, setCommitToEdit] = useState<Commit | null>(null);
     const [commitToDelete, setCommitToDelete] = useState<Commit | null>(null);
+    const navigate = useNavigate();
     const { logoutUser } = useAuth(); 
     const { commitsData, isPending, isError, error, createCommit, updateCommit, deleteCommit } = useCommits();
     const { commitLogs, isPendingLogs, createCommitLog, completedCommitIdsToday, streaks } = useCommitLogs(commitsData || EMPTY_COMMITS);
@@ -100,6 +102,7 @@ export default function Home() {
           setCommitToEdit={setCommitToEdit}
           setCommitToDelete={setCommitToDelete}
           setEditTitle={setEditTitle}
+          onNavigate={() => navigate(`/commit/${commit.id}`)}
           />
         ))}
         </div>
