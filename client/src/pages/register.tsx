@@ -1,11 +1,9 @@
 import { useState } from "react"
-import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { register } from "../services/api";
+import { register } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Card,
   CardAction,
@@ -20,13 +18,13 @@ export default function Register() {
     const [ email, setEmail ] = useState('');
     const [ password, setPassword ] = useState('');
     const navigate = useNavigate();
-    const { setUser } = useAuth();
+    const queryClient = useQueryClient();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             const data = await register(email, password);
-            setUser(data.user);
+            queryClient.setQueryData(['AuthUser'], data);
             navigate('/login');
         } catch (error) {
             console.error('Error registering:', error);

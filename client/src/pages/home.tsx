@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCommits } from '@/hooks/useCommits';
 import { useCommitLogs } from '@/hooks/useCommitLogs';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import type { Commit } from '@/types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
