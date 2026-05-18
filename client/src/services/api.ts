@@ -45,7 +45,7 @@ export const logout = async () => {
         throw error;
     }
 }
-
+// Fetch commits
 export const fetchCommits = async () => {
     try {
         const { data } = await api.get('/commits');

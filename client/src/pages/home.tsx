@@ -39,7 +39,7 @@ export default function Home() {
     const navigate = useNavigate();
     const { logoutUser } = useAuth(); 
     const { commitsData, isPending, isError, error, createCommit, updateCommit, deleteCommit } = useCommits();
-    const { commitLogs, isPendingLogs, createCommitLog, completedCommitIdsToday, streaks } = useCommitLogs(commitsData || EMPTY_COMMITS);
+    const { commitLogs, createCommitLog, completedCommitIdsToday, streaks } = useCommitLogs(commitsData || EMPTY_COMMITS);
 
 
     if (isPending) {
@@ -94,7 +94,6 @@ export default function Home() {
           key={commit.id} 
           commit={commit}
           logs = {commitLogs.filter(log => log.commitId === commit.id)}
-          isPendingLogs = {isPendingLogs}
           streak = {streaks[commit.id] || 0}
           isPending = {createCommitLog.isPending && createCommitLog.variables?.commitId === commit.id}
           onCreateCommitLog = {() => createCommitLog.mutate({ commitId: commit.id, date: new Date().toISOString() })}
