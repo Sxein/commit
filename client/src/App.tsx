@@ -10,7 +10,7 @@ import CommitDetails from './pages/commit-details';
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home/>
+    element: <ProtectedRoute><Home /></ProtectedRoute>
   },
   {
     path: "/login",
