@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query";
 import { fetchCommitLogs } from "@/services/api";
 import { useCommits } from "@/hooks/useCommits";
+import { Loader2 } from "lucide-react";
 import {ActivityCalendar} from "react-activity-calendar";
 import 'react-activity-calendar/tooltips.css';
 import { addDays, format, startOfMonth } from "date-fns";
@@ -10,16 +11,16 @@ import type { CommitLog, Commit } from "@/types";
 export default function CommitDetails() {
     const { id } = useParams();
     const commitId = Number(id);
-    const { commitsData } = useCommits();
+    const { commitsData, isPending } = useCommits();
 
     const currentCommit = commitsData?.find((commit: Commit) => commit.id === commitId);
 
-    const { data: logs } = useQuery({
+    const { data: logs, isPending: isLogsPending } = useQuery({
         queryKey: ['commitLogs', commitId],
         queryFn: () => fetchCommitLogs(commitId),
     });
 
-    const completedDateSet = new Set(logs?.map((log: CommitLog) => log.date.split('T')[0]));
+    const completedDateSet = new Set(logs?.map((log: CommitLog) => log.date.split('T')[0]) || []); 
 
     const calendarData = Array.from({ length: 365 }, (_, i) => {
         const date = addDays(startOfMonth(new Date(currentCommit?.createdAt || new Date())), i);    
@@ -34,10 +35,14 @@ export default function CommitDetails() {
         };
     })
 
-
     return (
         <>
             <p>Commit Details</p>
+            {isPending || isLogsPending ? (
+                <div className="flex items-center justify-center h-screen">
+                    <Loader2 className="h-8 w-8 animate-spin text-slate-500" />
+                </div>
+            ) : (
             <div className="flex justify-center items-center h-64">
                 <ActivityCalendar
                 data={calendarData}
@@ -59,6 +64,7 @@ export default function CommitDetails() {
                 }}
             />
             </div>
+            )}
         </>
     )
 }
