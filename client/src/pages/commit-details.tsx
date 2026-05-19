@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query";
 import { fetchCommitLogs } from "@/services/api";
 import { useCommits } from "@/hooks/useCommits";
-import { Loader2, ArrowLeft, Target, Flame, TrendingUp } from "lucide-react";
+import { Loader2, ArrowLeft, Target, Flame, TrendingUp, CalendarDays } from "lucide-react";
 import {ActivityCalendar} from "react-activity-calendar";
 import 'react-activity-calendar/tooltips.css';
 import { addDays, format, startOfMonth, differenceInDays } from "date-fns";
@@ -59,9 +59,12 @@ export default function CommitDetails() {
                     Back to Commits
                 </Button>
 
-                <div className="space-y-2 mb-8">
+                <div className="space-y-1.5 mb-8">
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900">{currentCommit?.title}</h1>
-                    <p className="text-slate-500">Visualizing your progress starting from creation.</p>
+                    <div className="flex items-center text-slate-500 text-sm font-medium">
+                        <CalendarDays className="mr-1.5 h-4 w-4" />
+                        <span>Started on {currentCommit?.createdAt ? format(new Date(currentCommit.createdAt), 'MMMM dd, yyyy') : '...'}</span>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
