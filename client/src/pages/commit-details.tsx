@@ -5,15 +5,15 @@ import { useCommits } from "@/hooks/useCommits";
 import { Loader2, ArrowLeft, Target, Flame, TrendingUp } from "lucide-react";
 import {ActivityCalendar} from "react-activity-calendar";
 import 'react-activity-calendar/tooltips.css';
-import { addDays, format, startOfMonth } from "date-fns";
+import { addDays, format, startOfMonth, differenceInDays } from "date-fns";
 import type { CommitLog, Commit } from "@/types";
 import { calculateStreaks } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function CommitDetails() {
-    const { id } = useParams();
     const navigate = useNavigate();
+    const { id } = useParams();
     const commitId = Number(id);
     const { commitsData, isPending } = useCommits();
 
@@ -41,7 +41,10 @@ export default function CommitDetails() {
 
     const totalRepetitions = logs?.filter((log: CommitLog) => log.isCompleted).length || 0;
     const streaks = calculateStreaks(logs || []);
-    const consistency = Math.round((totalRepetitions / 365) * 100);
+
+    const daysSinceCreation = differenceInDays(new Date(), new Date(currentCommit?.createdAt || new Date()));
+    const totalDays = Math.max(1, daysSinceCreation);
+    const consistency = Math.round((totalRepetitions / totalDays) * 100);
 
     return (
         <div className="max-w-3xl mx-auto p-6 space-y-8">
