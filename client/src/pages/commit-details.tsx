@@ -51,7 +51,7 @@ export default function CommitDetails() {
                 </div>
             ) : (
             <div className="animate-in fade-in duration-500">
-                <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6 -ml-4 text-slate-500 hover:text-slate-900 cursor-pointer">
+                <Button variant="ghost" onClick={() => navigate('/')} className="mb-6 -ml-4 text-slate-500 hover:text-slate-900 cursor-pointer">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back to Commits
                 </Button>
