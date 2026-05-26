@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { register } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   Card,
   CardAction,
@@ -36,7 +35,6 @@ const formSchema = z.object({
 export default function Register() {
 
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver :  zodResolver(formSchema),
@@ -49,7 +47,7 @@ export default function Register() {
     const onSubmit = async (input: z.infer<typeof formSchema>) => {
         try {
             const {email, password } = input
-            const data = await register(email, password);
+            await register(email, password);
 
             toast.success("Register Successfully! Please Sign In.", {position: "top-center", style:{background: 'green', color: 'white'}});
             navigate('/login');
