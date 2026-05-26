@@ -76,7 +76,6 @@ export default function Register() {
                 </Button>
                 </form>
             </CardContent>
-
             </Card>
         </div>
   )

@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/api";
 import { Button } from "@/components/ui/button";
@@ -11,24 +10,47 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field"
+import z from "zod";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
+const formSchema =  z.object({
+    email: z.email({message: "Enter a valid email"}),
+    password: z.string().min(1, {message:"Please enter your password"} )
+})
 export default function Login() {
-    const [ email, setEmail ] = useState('');
-    const [ password, setPassword ] = useState('');
+
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            email: "",
+            password: ""
+        }
+    })
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const onSubmit = async (input: z.infer<typeof formSchema>) => {
         try {
+            const {email, password } = input
             const data = await login(email, password);
             queryClient.setQueryData(['AuthUser'], data);
+            toast.success("Successfully logged in", {position: "top-center", style:{background: 'green', color: 'white'}});
             navigate('/');
+            
         } catch (error) {
-            console.error('Error logging in:', error);
+            console.error('Error Logging in:', error);
+            toast.error("Failed to login");
         }
     }
     return (
@@ -46,43 +68,63 @@ export default function Login() {
                 </CardAction>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit}>
-                <div className="flex flex-col gap-6">
-                    <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        placeholder="m@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                    </div>
-                    <div className="grid gap-2">
-                    <div className="flex items-center">
-                        <Label htmlFor="password">Password</Label>
-                        <a
-                        href="#"
-                        className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                        >
-                        Forgot your password?
-                        </a>
-                    </div>
-                    <Input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                    </div>
-                </div>
-                <Button className="mt-6 w-full" type="submit">
-                    Log In
-                </Button>
+                <form id="login-form" onSubmit={form.handleSubmit(onSubmit)}>
+                    <FieldGroup>
+                        <Controller
+                            name="email"
+                            control={form.control}
+                            render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel htmlFor="login-form-email">
+                                        Email
+                                    </FieldLabel>
+                                    <Input
+                                        {...field}
+                                        id="login-form-email"
+                                        aria-invalid={fieldState.invalid}
+                                        placeholder="Enter your email"
+                                        autoComplete="email"
+                                    />
+                                    {fieldState.invalid && (
+                                        <FieldError errors={[fieldState.error]} />
+                                    )}
+                                </Field>
+                            )}
+                        />
+                        
+                        <Controller
+                            name="password"
+                            control={form.control}
+                            render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel htmlFor="login-form-password">
+                                        Password
+                                    </FieldLabel>
+                                    <Input
+                                        {...field}
+                                        id="login-form-password"
+                                        type="password"
+                                        aria-invalid={fieldState.invalid}
+                                        placeholder="Enter your password"
+                                        autoComplete="current-password"
+                                    />
+                                    {fieldState.invalid && (
+                                        <FieldError errors={[fieldState.error]} />
+                                    )}
+                                </Field>
+                            )}
+                        />
+                    </FieldGroup>
                 </form>
             </CardContent>
+            
+            <CardFooter>
+                <div className="w-full">
+                    <Button type="submit" form="login-form" className="w-full">
+                        Log in
+                    </Button>
+                </div>
+            </CardFooter>
             </Card>
         </div>
   )
