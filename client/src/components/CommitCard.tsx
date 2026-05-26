@@ -14,7 +14,7 @@ import type { Commit, CommitLog } from '@/types';
 export default function CommitCard({
     commit,
     logs,
-    streak,
+    // streak,
     isPending,
     onCreateCommitLog,
     isCompletedToday,
@@ -25,7 +25,7 @@ export default function CommitCard({
 } : {
     commit: Commit;
     logs: CommitLog[];
-    streak: number;
+    // streak: number;
     isPending: boolean;
     onCreateCommitLog: () => void;
     isCompletedToday: boolean;
