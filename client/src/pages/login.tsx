@@ -50,7 +50,7 @@ export default function Login() {
             
         } catch (error) {
             console.error('Error Logging in:', error);
-            toast.error("Failed to login");
+            toast.error("Failed to login", {position: "top-center", style: {background: 'red', color: 'white'}});
         }
     }
     return (
