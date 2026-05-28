@@ -10,6 +10,18 @@ import { Button } from "@/components/ui/button";
 import { PencilIcon, Ellipsis, TrashIcon, Loader2, CirclePlus, CheckCircle2 } from "lucide-react"
 import type { Commit, CommitLog } from '@/types';
 
+interface commitCardProps {
+  commit: Commit;
+    logs: CommitLog[];
+    // streak: number;
+    isPending: boolean;
+    onCreateCommitLog: () => void;
+    isCompletedToday: boolean;
+    setCommitToEdit: (commit: Commit) => void;
+    setEditTitle: (title: string) => void;
+    setCommitToDelete: (commit: Commit) => void;
+    onNavigate: () => void;
+}
 
 export default function CommitCard({
     commit,
@@ -22,18 +34,7 @@ export default function CommitCard({
     setEditTitle,
     setCommitToDelete,
     onNavigate
-} : {
-    commit: Commit;
-    logs: CommitLog[];
-    // streak: number;
-    isPending: boolean;
-    onCreateCommitLog: () => void;
-    isCompletedToday: boolean;
-    setCommitToEdit: (commit: Commit) => void;
-    setEditTitle: (title: string) => void;
-    setCommitToDelete: (commit: Commit) => void;
-    onNavigate: () => void;
-}
+} : commitCardProps
 ) {   
     return (
         <Card 
