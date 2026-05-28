@@ -23,7 +23,11 @@ const formSchema = z.object({
         .regex(/[A-Z]/, { message: "Must contain at least one uppercase letter." })
         .regex(/[a-z]/, { message: "Must contain at least one lowercase letter." })
         .regex(/[0-9]/, { message: "Must contain at least one number." })
-        .regex(/[^A-Za-z0-9]/, { message: "Must contain at least one special character." })
+        .regex(/[^A-Za-z0-9]/, { message: "Must contain at least one special character." }),
+    confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Password do not match",
+    path: ["confirmPassword"], 
 })
 export default function Register() {
 
@@ -33,7 +37,8 @@ export default function Register() {
         resolver :  zodResolver(formSchema),
         defaultValues: {
             email: "",
-            password: ""
+            password: "",
+            confirmPassword: ""
         }
     });
 
@@ -98,7 +103,29 @@ export default function Register() {
                                         type="password"
                                         aria-invalid={fieldState.invalid}
                                         placeholder="Enter your password"
-                                        autoComplete="current-password"
+                                        autoComplete="new-password"
+                                    />
+                                    {fieldState.invalid && (
+                                        <FieldError errors={[fieldState.error]} />
+                                    )}
+                                </Field>
+                            )}
+                        />
+                        <Controller
+                            name="confirmPassword"
+                            control={form.control}
+                            render={({ field, fieldState }) => (
+                                <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel htmlFor="register-form-confirm-password">
+                                        Confirm your password
+                                    </FieldLabel>
+                                    <Input
+                                        {...field}
+                                        id="register-form-confirm-password"
+                                        type="password"
+                                        aria-invalid={fieldState.invalid}
+                                        placeholder="Enter your password"
+                                        autoComplete="new-password"
                                     />
                                     {fieldState.invalid && (
                                         <FieldError errors={[fieldState.error]} />
