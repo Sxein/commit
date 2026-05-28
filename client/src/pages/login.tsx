@@ -1,17 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/api";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQueryClient } from "@tanstack/react-query"; 
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter
-} from "@/components/ui/card"
 import {
   Field,
   FieldError,
@@ -22,6 +12,7 @@ import z from "zod";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import AuthCard from "@/components/AuthCard";
 
 const formSchema =  z.object({
     email: z.email({message: "Enter a valid email"}),
@@ -54,20 +45,15 @@ export default function Login() {
         }
     }
     return (
-        <div className = "flex min-h-screen items-center justify-center">
-            <Card className="w-full max-w-sm">
-            <CardHeader>
-                <CardTitle>Login to your account</CardTitle>
-                <CardDescription>
-                Enter your email below to login to your account
-                </CardDescription>
-                <CardAction>
-                <Button variant="link" onClick={() => navigate('/register')}>
-                    Sign Up
-                </Button>
-                </CardAction>
-            </CardHeader>
-            <CardContent>
+        <div className="flex min-h-screen items-center justify-center">
+            <AuthCard
+                title="Login to your account"
+                description="Enter your email below to login to your account"
+                actionText="Sign Up"
+                actionRoute={() => navigate('/register')}
+                submitText="Log in"
+                formType="login-form"
+            >
                 <form id="login-form" onSubmit={form.handleSubmit(onSubmit)}>
                     <FieldGroup>
                         <Controller
@@ -116,16 +102,7 @@ export default function Login() {
                         />
                     </FieldGroup>
                 </form>
-            </CardContent>
-            
-            <CardFooter>
-                <div className="w-full">
-                    <Button type="submit" form="login-form" className="w-full">
-                        Log in
-                    </Button>
-                </div>
-            </CardFooter>
-            </Card>
+            </AuthCard>
         </div>
   )
 }

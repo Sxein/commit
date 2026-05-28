@@ -1,16 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { register } from "@/services/api";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter 
-} from "@/components/ui/card";
+
+import { Input } from "@/components/ui/input";  
+
 import {
   Field,
   FieldError,
@@ -21,6 +13,7 @@ import z from "zod";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import AuthCard from "@/components/AuthCard";
 
 const formSchema = z.object({
     email: z.email({message: "Please enter a valid email."}),
@@ -60,32 +53,27 @@ export default function Register() {
 
     return (
         <div className = "flex min-h-screen items-center justify-center">
-            <Card className="w-full max-w-sm">
-            <CardHeader>
-                <CardTitle>Register for an account</CardTitle>
-                <CardDescription>
-                Enter your details below to create an account
-                </CardDescription>
-                <CardAction>
-                <Button variant="link" onClick={() => navigate('/login')}>
-                    Log in
-                </Button>
-                </CardAction>
-            </CardHeader>
-            <CardContent>
-                <form id="login-form" onSubmit={form.handleSubmit(onSubmit)}>
+            <AuthCard
+            title = "Register for an account"
+            description="Enter your details below to create an account"
+            actionText="Log In"
+            actionRoute={()=>navigate('/login')}
+            submitText="Register"
+            formType="register-form"
+            >
+                <form id="register-form" onSubmit={form.handleSubmit(onSubmit)}>
                     <FieldGroup>
                         <Controller
                             name="email"
                             control={form.control}
                             render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor="login-form-email">
+                                    <FieldLabel htmlFor="register-form-email">
                                         Email
                                     </FieldLabel>
                                     <Input
                                         {...field}
-                                        id="login-form-email"
+                                        id="register-form-email"
                                         aria-invalid={fieldState.invalid}
                                         placeholder="Enter your email"
                                         autoComplete="email"
@@ -95,19 +83,18 @@ export default function Register() {
                                     )}
                                 </Field>
                             )}
-                        />
-                        
+                        />       
                         <Controller
                             name="password"
                             control={form.control}
                             render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor="login-form-password">
+                                    <FieldLabel htmlFor="register-form-password">
                                         Password
                                     </FieldLabel>
                                     <Input
                                         {...field}
-                                        id="login-form-password"
+                                        id="register-form-password"
                                         type="password"
                                         aria-invalid={fieldState.invalid}
                                         placeholder="Enter your password"
@@ -121,15 +108,7 @@ export default function Register() {
                         />
                     </FieldGroup>
                 </form>
-            </CardContent>
-            <CardFooter>
-                <div className="w-full">
-                    <Button type="submit" form="login-form" className="w-full">
-                        Register
-                    </Button>
-                </div>
-            </CardFooter>
-            </Card>
+            </AuthCard>
         </div>
   )
 }
