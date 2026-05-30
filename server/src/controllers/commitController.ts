@@ -12,6 +12,11 @@ export const createCommit = async (req: AuthRequest, res: Response) => {
 
     try {
         const { title } = req.body;
+
+        if (!title || typeof title !== 'string' || title.trim() === '') {
+            return res.status(400).json({ error: "Title is required and must be a valid string." });
+        }
+
         const newCommit = await prisma.commit.create({
             data: {
                 title,
@@ -55,9 +60,15 @@ export const deleteCommit = async (req: AuthRequest, res: Response) => {
 
     try {
         const { commitId } = req.params;
+        const parseId = Number(commitId);
+
+        if (Number.isNaN(parseId)) {
+            return res.status(400).json({ error: "Invalid ID format"});
+        }
+        
         const deletedCommit = await prisma.commit.deleteMany({
             where: {
-                id: Number(commitId),
+                id: parseId,
                 userId: userId
             }
         })
@@ -81,11 +92,20 @@ export const updateCommit = async (req: AuthRequest, res: Response) => {
 
     try {
         const { commitId } = req.params;
+        const parseId = Number(commitId);
         const { title } = req.body;
+
+        if (Number.isNaN(parseId)) {
+            return res.status(400).json({ error: "Invalid ID format"});
+        }      
+
+        if (!title || typeof title !== 'string' || title.trim() === '') {
+            return res.status(400).json({ error: "Title is required and must be a valid string." });
+        }
 
         const updatedCommit = await prisma.commit.updateMany({
             where: {
-                id: Number(commitId),
+                id: parseId,
                 userId: userId
             },
             data: {
