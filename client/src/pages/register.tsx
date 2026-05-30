@@ -47,12 +47,12 @@ export default function Register() {
             const {email, password } = input
             await register(email, password);
 
-            toast.success("Register Successfully! Please Sign In.", {position: "top-center", style:{background: 'green', color: 'white'}});
+            toast.success("Register Successfully! Please Sign In.", {position: "top-center"});
             navigate('/login');
             
         } catch (error) {
             console.error('Error registering', error);
-            toast.error("Failed to Register", {position: "top-center", style: {background: 'red', color: 'white'}});
+            toast.error("Failed to Register", {position: "top-center"});
         }
     };
 

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import CommitCard from '@/components/CommitCard';
 
+
 import {
   Dialog,
   DialogClose,
@@ -81,7 +82,7 @@ export default function Home() {
           <Button 
           type="submit" 
           className='cursor-pointer min-w-22' 
-          disabled={createCommit.isPending}
+          disabled={ !commitTitle || createCommit.isPending}
           >
             {createCommit.isPending && <Loader2 className="h-4 w-4 animate-spin" /> }
             Create

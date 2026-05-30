@@ -36,12 +36,12 @@ export default function Login() {
             const {email, password } = input
             const data = await login(email, password);
             queryClient.setQueryData(['AuthUser'], data);
-            toast.success("Successfully logged in", {position: "top-center", style:{background: 'green', color: 'white'}});
+            toast.success("Successfully logged in", {position: "top-center"});
             navigate('/');
             
         } catch (error) {
             console.error('Error Logging in:', error);
-            toast.error("Failed to login", {position: "top-center", style: {background: 'red', color: 'white'}});
+            toast.error("Incorrect email or password!", {position: "top-center"});
         }
     }
     return (
