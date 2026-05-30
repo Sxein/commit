@@ -21,7 +21,11 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.20.0"
+    "pg": "^8.20.0",
+    "zod": "^4.4.3"
+  },
+  "overrides": {
+    "@hono/node-server": "^1.19.13"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

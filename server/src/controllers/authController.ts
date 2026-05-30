@@ -3,14 +3,40 @@ import { AuthRequest } from '../types/index.js';
 import { prisma } from "../../lib/prisma.js";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import z from "zod";
+
+// Register Zod Schema
+const registerSchema = z.object({
+    email: z.email({message: "Please enter a valid email."}),
+    password: z.string()
+        .min(8, { message: "Password must be at least 8 characters long." })
+        .max(100, { message: "Password must not exceed 100 characters long."})
+        .regex(/[A-Z]/, { message: "Must contain at least one uppercase letter." })
+        .regex(/[a-z]/, { message: "Must contain at least one lowercase letter." })
+        .regex(/[0-9]/, { message: "Must contain at least one number." })
+        .regex(/[^A-Za-z0-9]/, { message: "Must contain at least one special character." }),
+    confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Password do not match",
+    path: ["confirmPassword"], 
+})
+
+// Log in Zod Schema
+const LoginSchema =  z.object({
+    email: z.email({message: "Enter a valid email"}),
+    password: z.string().min(1, {message:"Please enter your password"} )
+})
 
 export const register = async (req: Request, res: Response) => {
-    try {
-        const { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({error: 'Email and password are required.'});
-        }
+    const validation = registerSchema.safeParse(req.body);
 
+    if (!validation.success) {
+        return res.status(400).json({ error: validation.error})
+    };
+
+    const { email, password } = validation.data;
+
+    try {
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
             return res.status(400).json({error: 'Email is already registered.'});
@@ -24,20 +50,24 @@ export const register = async (req: Request, res: Response) => {
             }
         })
         res.status(201).json({ message: 'User registered successfully.', user: { userId: newUser.id, email: newUser.email } });
-    }
+    } 
     catch (error) {
         console.error('Error during registration:', error);
         res.status(500).json({ error: 'An error occurred during registration.' });
     }
+
 }
 
-export const login = async (req: Request, res: Response) => {
-    try {
-        const { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({error: 'Email and password are required.'});
-        }
 
+export const login = async (req: Request, res: Response) => {
+    const validation = LoginSchema.safeParse(req.body)
+
+    if (!validation.success) {
+        return res.status(400).json({error: validation.error})
+    };
+
+    const {email, password} = validation.data;
+    try {
         const user = await prisma.user.findUnique( { where: { email } });
         if (!user) {
             return res.status(400).json({error: 'Invalid email or password.'});
@@ -72,6 +102,7 @@ export const login = async (req: Request, res: Response) => {
         console.error('Error during login:', error);
         res.status(500).json({ error: 'An error occurred during login.' });
     }
+
 }
 
 export const getMe = async (req: AuthRequest, res: Response) => {
