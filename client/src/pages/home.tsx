@@ -7,7 +7,7 @@ import type { Commit } from '@/types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import CommitCard from '@/components/CommitCard';
-
+import confetti from 'canvas-confetti';
 
 import {
   Dialog,
@@ -96,7 +96,19 @@ export default function Home() {
           logs = {commitLogs.filter(log => log.commitId === commit.id)}
           // streak = {streaks[commit.id] || 0}
           isPending = {createCommitLog.isPending && createCommitLog.variables?.commitId === commit.id}
-          onCreateCommitLog = {() => createCommitLog.mutate({ commitId: commit.id, date: new Date().toISOString() })}
+          onCreateCommitLog = {() => createCommitLog.mutate(
+            { commitId: commit.id, date: new Date().toISOString() },
+            {
+              onSuccess: () => {
+                confetti({
+                  particleCount: 150,
+                  spread: 70,
+                  origin: { y: 0.6 },
+                  colors: ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7']
+                });
+              }
+            }
+          )}
           isCompletedToday = {completedCommitIdsToday.includes(commit.id)}
           setCommitToEdit={setCommitToEdit}
           setCommitToDelete={setCommitToDelete}
